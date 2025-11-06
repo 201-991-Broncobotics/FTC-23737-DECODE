@@ -19,7 +19,7 @@ public class LIMELIGHTS extends OpMode {
         limelights.pipelineSwitch(8);
         imu = hardwareMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP,
-            RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
         imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
     }
 
@@ -33,11 +33,15 @@ public class LIMELIGHTS extends OpMode {
         YawPitchRollAngles orientations = imu.getRobotYawPitchRollAngles();
         limelights.updateRobotOrientation(orientations.getYaw());
         LLResult llResult = limelights.getLatestResult();
-        if (llResult != null && llResult.isValid());{
+        if (llResult != null && llResult.isValid()) ;
+        {
             Pose3D botPose = llResult.getBotpose_MT2();
             telemetry.addData("Tx", llResult.getTx());
             telemetry.addData("Ty", llResult.getTy());
             telemetry.addData("Ta", llResult.getTa());
+
         }
     }
+
+
 }
