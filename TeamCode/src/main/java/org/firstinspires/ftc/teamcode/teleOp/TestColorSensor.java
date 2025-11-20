@@ -50,7 +50,7 @@ public class TestColorSensor {
 
         }
 
-
+//this
     }
 
     public DetectedColor getColors() {
