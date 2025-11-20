@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-public class auton extends OpMode {
+public class Auton23737 extends OpMode {
 
     DcMotor front_Right_Wheel;
     DcMotor back_Right_Wheel;
