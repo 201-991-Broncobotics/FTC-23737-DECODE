@@ -1,7 +1,10 @@
-
 package org.firstinspires.ftc.teamcode.teleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode; // Required import
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+
+
+
 
 
 
@@ -13,6 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -20,10 +24,14 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
 import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+
 import java.util.concurrent.TimeUnit;
+
+
 
 
 @TeleOp(name = "TeleOp23737")
@@ -32,11 +40,12 @@ public class TeleOp23737 extends LinearOpMode {
     Servo movingServo;
     Servo flyWheel;
     DcMotor turnTable, turretPower, motorFlyWheel;
-    private ElapsedTime runtime = new ElapsedTime();
+    //private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
 
 
     public void runOpMode() {
+
 
         frontLeftMotor = hardwareMap.get(DcMotor.class, "fLM");
         backLeftMotor = hardwareMap.get(DcMotor.class, "bLM");
@@ -52,19 +61,24 @@ public class TeleOp23737 extends LinearOpMode {
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
 
+
         motorFlyWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-        flyWheel.setDirection(Servo.Direction.REVERSE);
+        flyWheel.setDirection(Servo.Direction.FORWARD);
         turnTable.setDirection(DcMotorSimple.Direction.FORWARD);
         colorSensor.init(hardwareMap, telemetry);
+
 
         double max, forward, strafe, rotate, throttle, magnitude, angle, frontLeftPower, frontRightPower, backLeftPower, backRightPower;
 
 
         waitForStart();
 
+
         while (opModeIsActive() && !isStopRequested()) { // idk if this way of making an OpMode might fix the issue
 
+
             colorSensor.getColors();
+
 
             // Might slow down code a bit by declaring a new variable every time, so I moved it so it declares each variable once ^ at the start
 
@@ -74,12 +88,14 @@ public class TeleOp23737 extends LinearOpMode {
             rotate = (gamepad1.right_stick_x);
             throttle = 0.8 + 0.2 * gamepad1.left_trigger; // must equal 1, easy way to create a boost button
 
+
             // One way of making driving smoother
             magnitude = Math.hypot(forward, strafe);
             angle = Math.atan2(forward, strafe); //change to forward, strafe if doesn't work
             magnitude = Math.pow(magnitude, 2) * Math.signum(magnitude);
             forward = magnitude * Math.sin(angle);
             strafe = magnitude * Math.cos(angle);
+
 
             frontLeftPower = forward + strafe + rotate;
             frontRightPower = forward - strafe - rotate;
@@ -91,13 +107,16 @@ public class TeleOp23737 extends LinearOpMode {
             backLeftPower /= max;
             backRightPower /= max;
 
+
             if (gamepad1.left_stick_y == 0 && (gamepad1.left_stick_x == 0) && (gamepad1.right_stick_x == 0)) {
+
 
                 frontLeftMotor.setPower(0);
                 frontRightMotor.setPower(0);
                 backLeftMotor.setPower(0);
                 backRightMotor.setPower(0);
             }
+
 
             frontLeftMotor.setPower(frontLeftPower * throttle);
             frontRightMotor.setPower(frontRightPower * throttle);
@@ -108,12 +127,14 @@ public class TeleOp23737 extends LinearOpMode {
             float x = gamepad1.right_trigger;
             float y = gamepad1.left_trigger;
 
+
             if (x > 0) {
                 turnTable.setPower(x);
             }
             telemetry.addData("power of motor", turnTable);
             telemetry.update();
             turnTable.setPower(0);
+
 
             if (y > 0) {
                 turnTable.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -122,14 +143,14 @@ public class TeleOp23737 extends LinearOpMode {
             turnTable.setPower(0);
 
 
-
             if (gamepad1.dpad_up) {
                 flyWheel.setPosition(0);
                 motorFlyWheel.setPower(-1);
-            } else if (!gamepad1.dpad_up){
+            } else if (!gamepad1.dpad_up) {
                 flyWheel.setPosition(0.5);
                 motorFlyWheel.setPower(0);
             }
+
 
             if (gamepad1.dpad_left) {
                 turretPower.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -139,14 +160,16 @@ public class TeleOp23737 extends LinearOpMode {
                 turretPower.setPower(0);
             }
 
+
             if (gamepad1.a) {
                 movingServo.setPosition(.9);//  0.85 and 0.25 works
             }
-            if (gamepad1.b){
+            if (gamepad1.b) {
                 movingServo.setPosition(.30); // .65 .45 and .05 (One of the pair will share 0.85)
             }
             if (gamepad1.x) {
                 movingServo.setPosition(0.50); // .65 and .1 works
+
 
             }
             if (gamepad1.y) {
@@ -154,31 +177,30 @@ public class TeleOp23737 extends LinearOpMode {
             }
             telemetry.update();
 
-        }
-
-
-        if(gamepad1.y) {
-            TestColorSensor.DetectedColor detected = colorSensor.getColors();
-
-
-            if (detected == TestColorSensor.DetectedColor.GREEN) {
-                movingServo.setPosition(1.0);  // example position
-            }
-            else if (detected == TestColorSensor.DetectedColor.PURPLE) {
-                movingServo.setPosition(0.0);  // example position
-            }
-            else {  // UNKNOWN
-                movingServo.setPosition(0.5);  // example fallback action
-            }
-
 
         }
-
-
-//will..
-
-        colorSensor.getColors();
-        telemetry.update();
     }
 }
 
+
+
+         /* if(gamepad1.y) {
+               TestColorSensor.DetectedColor detected = colorSensor.getColors();
+
+
+               if (detected == TestColorSensor.DetectedColor.GREEN) {
+                   movingServo.setPosition(1.0);  // example position
+               }
+               else if (detected == TestColorSensor.DetectedColor.PURPLE) {
+                   movingServo.setPosition(0.0);  // example position
+               }
+               else {  // UNKNOWN
+                   movingServo.setPosition(0.5);  // example fallback action
+               }
+
+
+
+
+           }
+
+          */
