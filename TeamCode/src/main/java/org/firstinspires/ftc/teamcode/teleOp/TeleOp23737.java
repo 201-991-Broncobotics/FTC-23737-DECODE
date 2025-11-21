@@ -1,38 +1,9 @@
 package org.firstinspires.ftc.teamcode.teleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode; // Required import
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-
-
-
-
-
-
-
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
-
-import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-
-import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-
-import java.util.concurrent.TimeUnit;
-
-
-
 
 @TeleOp(name = "TeleOp23737")
 public class TeleOp23737 extends LinearOpMode {
@@ -40,17 +11,16 @@ public class TeleOp23737 extends LinearOpMode {
     Servo movingServo;
     Servo flyWheel;
     DcMotor turnTable, turretPower, motorFlyWheel;
-    //private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
 
 
     public void runOpMode() {
 
 
-        frontLeftMotor = hardwareMap.get(DcMotor.class, "fLM");
-        backLeftMotor = hardwareMap.get(DcMotor.class, "bLM");
-        frontRightMotor = hardwareMap.get(DcMotor.class, "fRM");
-        backRightMotor = hardwareMap.get(DcMotor.class, "bRM");
+        //private ElapsedTime runtime = new ElapsedTime();
+        DcMotor frontLeftMotor = hardwareMap.get(DcMotor.class, "fLM");
+        DcMotor backLeftMotor = hardwareMap.get(DcMotor.class, "bLM");
+        DcMotor frontRightMotor = hardwareMap.get(DcMotor.class, "fRM");
+        DcMotor backRightMotor = hardwareMap.get(DcMotor.class, "bRM");
         movingServo = hardwareMap.get(Servo.class, "sorting_Servo");
         flyWheel = hardwareMap.get(Servo.class, "fly_Wheel");
         turretPower = hardwareMap.get(DcMotor.class, "turret_Motor");
@@ -63,7 +33,7 @@ public class TeleOp23737 extends LinearOpMode {
 
 
         motorFlyWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-        flyWheel.setDirection(Servo.Direction.FORWARD);
+        flyWheel.setDirection(Servo.Direction.REVERSE);
         turnTable.setDirection(DcMotorSimple.Direction.FORWARD);
         colorSensor.init(hardwareMap, telemetry);
 
@@ -147,7 +117,7 @@ public class TeleOp23737 extends LinearOpMode {
                 flyWheel.setPosition(0);
                 motorFlyWheel.setPower(-1);
             } else if (!gamepad1.dpad_up) {
-                flyWheel.setPosition(0.5);
+                flyWheel.setPosition(.05);
                 motorFlyWheel.setPower(0);
             }
 
