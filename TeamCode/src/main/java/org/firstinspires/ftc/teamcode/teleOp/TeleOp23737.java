@@ -1,5 +1,9 @@
 
 package org.firstinspires.ftc.teamcode.teleOp;
+import static java.lang.Thread.currentThread;
+import static java.lang.Thread.sleep;
+
+import com.qualcomm.hardware.ams.AMSColorSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode; // Required import
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -8,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -27,17 +32,16 @@ import java.util.concurrent.TimeUnit;
 
 
 @TeleOp(name = "TeleOp23737")
-public class TeleOp23737 extends LinearOpMode {
+public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, change back to linearopmode. It can be found in the emergancy code
     TestColorSensor colorSensor = new TestColorSensor();
     Servo movingServo;
     Servo flyWheel;
     DcMotor turnTable, turretPower, motorFlyWheel;
-    private ElapsedTime runtime = new ElapsedTime();
+    private ElapsedTime clock = new ElapsedTime();
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
 
 
     public void runOpMode() {
-
         frontLeftMotor = hardwareMap.get(DcMotor.class, "fLM");
         backLeftMotor = hardwareMap.get(DcMotor.class, "bLM");
         frontRightMotor = hardwareMap.get(DcMotor.class, "fRM");
@@ -52,28 +56,22 @@ public class TeleOp23737 extends LinearOpMode {
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        motorFlyWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-        flyWheel.setDirection(Servo.Direction.REVERSE);
+        motorFlyWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         turnTable.setDirection(DcMotorSimple.Direction.FORWARD);
         colorSensor.init(hardwareMap, telemetry);
-
-        double max, forward, strafe, rotate, throttle, magnitude, angle, frontLeftPower, frontRightPower, backLeftPower, backRightPower;
+        colorSensor.getColors();
 
 
         waitForStart();
 
-        while (opModeIsActive() && !isStopRequested()) { // idk if this way of making an OpMode might fix the issue
+        while (opModeIsActive()) {
 
             colorSensor.getColors();
-
+            double max, forward, strafe, rotate, throttle, magnitude, angle, frontLeftPower, frontRightPower, backLeftPower, backRightPower;
             // Might slow down code a bit by declaring a new variable every time, so I moved it so it declares each variable once ^ at the start
-
-
             forward = (-gamepad1.left_stick_y);  // Note: pushing stick forward gives negative value
             strafe = (gamepad1.left_stick_x);
             rotate = (gamepad1.right_stick_x);
-            throttle = 0.8 + 0.2 * gamepad1.left_trigger; // must equal 1, easy way to create a boost button
-
             // One way of making driving smoother
             magnitude = Math.hypot(forward, strafe);
             angle = Math.atan2(forward, strafe); //change to forward, strafe if doesn't work
@@ -85,24 +83,28 @@ public class TeleOp23737 extends LinearOpMode {
             frontRightPower = forward - strafe - rotate;
             backLeftPower = forward - strafe + rotate;
             backRightPower = forward + strafe - rotate;
+
             max = Math.max(1, Math.max(Math.max(Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower)), Math.abs(backLeftPower)), Math.abs(backRightPower)));
             frontLeftPower /= max;
             frontRightPower /= max;
             backLeftPower /= max;
             backRightPower /= max;
 
-            if (gamepad1.left_stick_y == 0 && (gamepad1.left_stick_x == 0) && (gamepad1.right_stick_x == 0)) {
 
+            if (gamepad1.left_stick_y == 0 && (gamepad1.left_stick_x == 0) && (gamepad1.right_stick_x == 0)) {
                 frontLeftMotor.setPower(0);
                 frontRightMotor.setPower(0);
                 backLeftMotor.setPower(0);
                 backRightMotor.setPower(0);
             }
-
-            frontLeftMotor.setPower(frontLeftPower * throttle);
-            frontRightMotor.setPower(frontRightPower * throttle);
-            backLeftMotor.setPower(backLeftPower * throttle);
-            backRightMotor.setPower(backRightPower * throttle);
+            frontLeftMotor.setPower(frontLeftPower);
+            frontRightMotor.setPower(frontRightPower);
+            backLeftMotor.setPower(backLeftPower);
+            backRightMotor.setPower(backRightPower);
+//            frontLeftMotor.setPower(frontLeftPower * throttle);
+//            frontRightMotor.setPower(frontRightPower * throttle);
+//            backLeftMotor.setPower(backLeftPower * throttle);
+//            backRightMotor.setPower(backRightPower * throttle);
 
 
             float x = gamepad1.right_trigger;
@@ -111,8 +113,7 @@ public class TeleOp23737 extends LinearOpMode {
             if (x > 0) {
                 turnTable.setPower(x);
             }
-            telemetry.addData("power of motor", turnTable);
-            telemetry.update();
+
             turnTable.setPower(0);
 
             if (y > 0) {
@@ -122,14 +123,14 @@ public class TeleOp23737 extends LinearOpMode {
             turnTable.setPower(0);
 
 
-
             if (gamepad1.dpad_up) {
-                flyWheel.setPosition(0);
-                motorFlyWheel.setPower(-1);
-            } else if (!gamepad1.dpad_up){
-                flyWheel.setPosition(0.5);
+                flyWheel.setPosition(.37);
+                motorFlyWheel.setPower(1);
+            } else if (!gamepad1.dpad_up) {
+                flyWheel.setPosition(.725);
                 motorFlyWheel.setPower(0);
             }
+
 
             if (gamepad1.dpad_left) {
                 turretPower.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -140,45 +141,111 @@ public class TeleOp23737 extends LinearOpMode {
             }
 
             if (gamepad1.a) {
-                movingServo.setPosition(.9);//  0.85 and 0.25 works
+                //\ movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
+                //movingServo.setPower(.5);
+                sleep(500);
+                //  movingServo.setPower(0);
+                // movingServo.setPosition(0.67);    //  0.85 (intake)and 0.67 (shooting)works
+
             }
-            if (gamepad1.b){
-                movingServo.setPosition(.30); // .65 .45 and .05 (One of the pair will share 0.85)
+            if (gamepad1.b) {
+
+                // movingServo.setDirection(DcMotorSimple.Direction.REVERSE);
+                //  movingServo.setPower(.5);
+                sleep(500);
+                // movingServo.setPower(0);
+                // movingServo.setPosition(0.1);            // 0.25(intake) and .1(shooting)
             }
             if (gamepad1.x) {
-                movingServo.setPosition(0.50); // .65 and .1 works
+
+                // movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
+                // movingServo.setPower(1);
+                sleep(500);
+                // movingServo.setPower(0);
+                // movingServo.setPosition(0.85);
 
             }
             if (gamepad1.y) {
-                movingServo.setPosition(1);
+
+                // movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
+                // movingServo.setPower(.1);
+                sleep(100);
+                // movingServo.setPower(0);
+                //movingServo.setPosition(.25);
             }
-            telemetry.update();
-
-        }
 
 
-        if(gamepad1.y) {
             TestColorSensor.DetectedColor detected = colorSensor.getColors();
-
-
             if (detected == TestColorSensor.DetectedColor.GREEN) {
-                movingServo.setPosition(1.0);  // example position
-            }
-            else if (detected == TestColorSensor.DetectedColor.PURPLE) {
-                movingServo.setPosition(0.0);  // example position
-            }
-            else {  // UNKNOWN
-                movingServo.setPosition(0.5);  // example fallback action
-            }
+                turretPower.setPower(1);
+                flyWheel.setPosition(0.735);
+                motorFlyWheel.setPower(1);
+                sleep(10000);
+                turretPower.setPower(0);
+                flyWheel.setPosition(.37);
+                motorFlyWheel.setPower(0);
+                movingServo.setPosition(.67);
+            } else if (detected == TestColorSensor.DetectedColor.PURPLE) {
+                turretPower.setPower(1);
+                flyWheel.setPosition(0.735);
+                motorFlyWheel.setPower(1);
+                sleep(10000);
+                turretPower.setPower(0);
+                flyWheel.setPosition(.37);
+                motorFlyWheel.setPower(0);
+                movingServo.setPosition(.85);
+            } else {
+                movingServo.setPosition(.85);
+                sleep(1500);
+                movingServo.setPosition(.1);
+                sleep(1500);
+                movingServo.setPosition(.25);
+                sleep(1500);
+                movingServo.setPosition(.67);
+                sleep(1500);
 
 
+                if (gamepad1.a) {
+
+                }
+
+
+                telemetry.addData("power of motor", turnTable);
+                telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
+                telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
+                colorSensor.getColors();
+                telemetry.update();
+
+            }
+
+            // UNKNOWN
+
+            telemetry.addData("power of motor", turnTable);
+            telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
+            telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
+            colorSensor.getColors();
+            telemetry.update();
         }
 
 
-//will..
-
-        colorSensor.getColors();
-        telemetry.update();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
