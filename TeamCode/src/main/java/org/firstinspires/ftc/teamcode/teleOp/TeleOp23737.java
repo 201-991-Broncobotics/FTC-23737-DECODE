@@ -61,7 +61,6 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
         colorSensor.init(hardwareMap, telemetry);
         colorSensor.getColors();
 
-
         waitForStart();
 
         while (opModeIsActive()) {
@@ -141,37 +140,37 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
             }
 
             if (gamepad1.a) {
-                //\ movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
+                //movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
                 //movingServo.setPower(.5);
-                sleep(500);
+               // sleep(500);
                 //  movingServo.setPower(0);
-                // movingServo.setPosition(0.67);    //  0.85 (intake)and 0.67 (shooting)works
+                 movingServo.setPosition(0.67);    //  0.85 (intake)and 0.67 (shooting)works
 
             }
             if (gamepad1.b) {
 
                 // movingServo.setDirection(DcMotorSimple.Direction.REVERSE);
                 //  movingServo.setPower(.5);
-                sleep(500);
+                //sleep(500);
                 // movingServo.setPower(0);
-                // movingServo.setPosition(0.1);            // 0.25(intake) and .1(shooting)
+                 movingServo.setPosition(0.1);            // 0.25(intake) and .1(shooting)
             }
             if (gamepad1.x) {
 
                 // movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
                 // movingServo.setPower(1);
-                sleep(500);
+               // sleep(500);
                 // movingServo.setPower(0);
-                // movingServo.setPosition(0.85);
+                 movingServo.setPosition(0.85);
 
             }
             if (gamepad1.y) {
 
                 // movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
                 // movingServo.setPower(.1);
-                sleep(100);
+               // sleep(100);
                 // movingServo.setPower(0);
-                //movingServo.setPosition(.25);
+                movingServo.setPosition(.25);
             }
 
 
@@ -204,10 +203,6 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
                 movingServo.setPosition(.67);
                 sleep(1500);
 
-
-                if (gamepad1.a) {
-
-                }
 
 
                 telemetry.addData("power of motor", turnTable);
