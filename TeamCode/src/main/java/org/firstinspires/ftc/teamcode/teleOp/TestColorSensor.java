@@ -23,11 +23,11 @@ public class TestColorSensor {
     }
 
     public enum DetectedColor {
-        GREEN(/* redMin */   .37, /* redMax */   .3819, /* greenMin */ .94, /* greenMax */
-                .956,/* blueMin */  .941, /* blueMax */  .943),
+        GREEN(/* redMin .012 */   .012, /* redMax .015 */   .015, /* greenMin .03 */ .03, /* greenMax .04*/
+                .04,/* blueMin ,023 */  .023, /* blueMax .03 */  .03),
 
-        PURPLE(/* redMin */   .9871, /* redMax */   .9875,/* greenMin */ .9871, /* greenMax */ .9875,
-                /* blueMin */  .9871, /* blueMax */  .9875),
+        PURPLE(/* redMin */   .01, /* redMax */   .02,/* greenMin */ .011, /* greenMax */ .015,
+                /* blueMin */  .012, /* blueMax */  .016),
         UNKNOWN(
                 0, 0, 0, 0, 0, 0
         );

@@ -13,12 +13,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode; // Required import
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 
-
+//brush
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -35,15 +37,22 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.concurrent.TimeUnit;
 
+import dev.nextftc.hardware.impl.ServoEx;
+
 
 @TeleOp(name = "TeleOp23737")
 public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, change back to linearopmode. It can be found in the emergancy code
     TestColorSensor colorSensor = new TestColorSensor();
-    Servo movingServo;
+    CRServo movingServo;
     Servo flyWheel;
-    DcMotor turnTable, turretPower, motorFlyWheel;
-    private ElapsedTime clock = new ElapsedTime();
+    DcMotor turnTable, turretPower, motorFlyWheel, motorIntake;
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
+
+    ElapsedTime clock;
+    double finalTime = 0;
+
+
+    boolean clockStarted = false;
 
 
     public void runOpMode() {
@@ -51,26 +60,33 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
         backLeftMotor = hardwareMap.get(DcMotor.class, "bLM");
         frontRightMotor = hardwareMap.get(DcMotor.class, "fRM");
         backRightMotor = hardwareMap.get(DcMotor.class, "bRM");
-        movingServo = hardwareMap.get(Servo.class, "sorting_Servo");
+        movingServo = hardwareMap.get(CRServo.class, "sServo");
         flyWheel = hardwareMap.get(Servo.class, "fly_Wheel");
         turretPower = hardwareMap.get(DcMotor.class, "turret_Motor");
         motorFlyWheel = hardwareMap.get(DcMotor.class, "mFly");
         turnTable = hardwareMap.get(DcMotor.class, "turn_Table");
+        //motorIntake = hardwareMap.get(DcMotor.class, "intake");
         frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.REVERSE);
 
         motorFlyWheel.setDirection(DcMotorSimple.Direction.REVERSE);
+        movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
         turnTable.setDirection(DcMotorSimple.Direction.FORWARD);
+       // motorIntake.setDirection(DcMotorSimple.Direction.REVERSE);
         colorSensor.init(hardwareMap, telemetry);
         colorSensor.getColors();
+        float x = gamepad1.right_trigger;
+        float y = gamepad1.left_trigger;
 
+        clock = new ElapsedTime();
 
         waitForStart();
 
-        while (opModeIsActive()) {
 
+        while (opModeIsActive() && !isStopRequested()) {
+            movingServo.setPower(1);
             colorSensor.getColors();
             double max, forward, strafe, rotate, throttle, magnitude, angle, frontLeftPower, frontRightPower, backLeftPower, backRightPower;
             // Might slow down code a bit by declaring a new variable every time, so I moved it so it declares each variable once ^ at the start
@@ -106,19 +122,11 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
             frontRightMotor.setPower(frontRightPower);
             backLeftMotor.setPower(backLeftPower);
             backRightMotor.setPower(backRightPower);
-//            frontLeftMotor.setPower(frontLeftPower * throttle);
-//            frontRightMotor.setPower(frontRightPower * throttle);
-//            backLeftMotor.setPower(backLeftPower * throttle);
-//            backRightMotor.setPower(backRightPower * throttle);
 
-
-            float x = gamepad1.right_trigger;
-            float y = gamepad1.left_trigger;
 
             if (x > 0) {
                 turnTable.setPower(x);
             }
-
             turnTable.setPower(0);
 
             if (y > 0) {
@@ -136,7 +144,6 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
                 motorFlyWheel.setPower(0);
             }
 
-
             if (gamepad1.dpad_left) {
                 turretPower.setDirection(DcMotorSimple.Direction.REVERSE);
                 turretPower.setPower(1);
@@ -145,92 +152,57 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
                 turretPower.setPower(0);
             }
 
-            if (gamepad1.a) {
-                //\ movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
-                //movingServo.setPower(.5);
-                sleep(500);
-                //  movingServo.setPower(0);
-                // movingServo.setPosition(0.67);    //  0.85 (intake)and 0.67 (shooting)works
 
-            }
-            if (gamepad1.b) {
+                 while (gamepad1.a) {
+                     movingServo.setPower(0);
+                 }
+                 while (gamepad1.b) {
+                      movingServo.setPower(-1);
+                 }
 
-                // movingServo.setDirection(DcMotorSimple.Direction.REVERSE);
-                //  movingServo.setPower(.5);
-                sleep(500);
-                // movingServo.setPower(0);
-                // movingServo.setPosition(0.1);            // 0.25(intake) and .1(shooting)
-            }
-            if (gamepad1.x) {
-
-                // movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
-                // movingServo.setPower(1);
-                sleep(500);
-                // movingServo.setPower(0);
-                // movingServo.setPosition(0.85);
-
-            }
-            if (gamepad1.y) {
-
-                // movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
-                // movingServo.setPower(.1);
-                sleep(100);
-                // movingServo.setPower(0);
-                //movingServo.setPosition(.25);
-            }
 
 
             TestColorSensor.DetectedColor detected = colorSensor.getColors();
             if (detected == TestColorSensor.DetectedColor.GREEN) {
-                turretPower.setPower(1);
-                flyWheel.setPosition(0.735);
-                motorFlyWheel.setPower(1);
-                sleep(10000);
-                turretPower.setPower(0);
-                flyWheel.setPosition(.37);
-                motorFlyWheel.setPower(0);
-                movingServo.setPosition(.67);
+                     movingServo.setPower(0);
+
+
             } else if (detected == TestColorSensor.DetectedColor.PURPLE) {
-                turretPower.setPower(1);
-                flyWheel.setPosition(0.735);
-                motorFlyWheel.setPower(1);
-                sleep(10000);
-                turretPower.setPower(0);
-                flyWheel.setPosition(.37);
-                motorFlyWheel.setPower(0);
-                movingServo.setPosition(.85);
-            } else {
-                movingServo.setPosition(.85);
-                sleep(1500);
-                movingServo.setPosition(.1);
-                sleep(1500);
-                movingServo.setPosition(.25);
-                sleep(1500);
-                movingServo.setPosition(.67);
-                sleep(1500);
+
+                    clock.reset();
+                    clock.startTime();
+                    if (clock.time(TimeUnit.SECONDS) >= 5) {
+                        turretPower.setPower(1);
+                        flyWheel.setPosition(.735);
+                        motorFlyWheel.setPower(1);
+                    }
+                    if (clock.time(TimeUnit.SECONDS) >= 10) {
+                        turretPower.setPower(0);
+                        flyWheel.setPosition(.37);
+                        motorFlyWheel.setPower(0);
+                        if (clock.time(TimeUnit.SECONDS) >= 11) {
+                         }
+                    }
+                } else {
+                clock.startTime();
+                        if (clock.time(TimeUnit.SECONDS) >= 0 && clock.time(TimeUnit.SECONDS) <= .438) {
+                            movingServo.setPower(1);
+                        } if (clock.time(TimeUnit.SECONDS) >= .438 && clock.time(TimeUnit.SECONDS) <= 1) {
+                            movingServo.setPower(0);
+                        } if (clock.time(TimeUnit.SECONDS) >= 6) {
+                            clock.reset();
+                        }
 
 
-                if (gamepad1.a) {
 
                 }
-
-
-                telemetry.addData("power of motor", turnTable);
-                telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
-                telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
-                colorSensor.getColors();
-                telemetry.update();
-
-            }
-
-            // UNKNOWN
-
-            telemetry.addData("power of motor", turnTable);
-            telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
-            telemetry.addData("Flywheel Servo Position: ", flyWheel.getPosition());
-            colorSensor.getColors();
             telemetry.update();
+
+
+
         }
+
+
 
 
     }
@@ -241,6 +213,85 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
 
 
 
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+            if (gamepad1.b && !clockStarted) {
+                clock.reset();
+                clockStarted = true;
+                movingServo.setPower(1);    // start servo
+            }
+
+            if (gamepad1.y && clockStarted) {
+                clockStarted = false;
+                movingServo.setPower(0);    // stop servo
+                finalTime = clock.seconds(); // save frozen time
+            }
+
+            if (clockStarted) {
+                telemetry.addData("Servo Power", "Running");
+                telemetry.addData("Timer (live)", clock.seconds());
+            } else {
+                telemetry.addData("Servo Power", "Stopped");
+                telemetry.addData("Timer (final)", finalTime);
+            }
+
+            telemetry.update();
+
+            while (gamepad1.x) {
+                movingServo.setPower(1);
+            }
+
+            while (gamepad1.y) {
+                movingServo.setPower(-1);
+            }
+
+
+ElapsedTime timer = new ElapsedTime();
+            boolean timerRunning = false;
+            double finalTime = 0;
+
+
+                 if (gamepad1.y && !timerRunning) {
+                    timer.reset();
+                    timerRunning = true;
+                    movingServo.setPower(1);    // start servo
+                }
+
+                 if (gamepad1.x && timerRunning) {
+                    timerRunning = false;
+                    movingServo.setPower(0);    // stop servo
+                    finalTime = timer.seconds(); // save frozen time
+                }
+
+                 if (timerRunning) {
+                    telemetry.addData("Servo Power", "Running");
+                    telemetry.addData("Timer (live)", timer.seconds());
+                } else {
+                    telemetry.addData("Servo Power", "Stopped");
+                    telemetry.addData("Timer (final)", finalTime);
+                }
+
+ while (gamepad1.x) {
+                movingServo.setPower(1);
+            }
+
+            while (gamepad1.y) {
+                movingServo.setPower(-1);
+            }
 
 
 
