@@ -1,15 +1,11 @@
-package org.firstinspires.ftc.teamcode.teleOp;
 
-public class EMERGANCYCODE {
-}//brush
-
-/*
 package org.firstinspires.ftc.teamcode.teleOp;
+import static com.pedropathing.math.MathFunctions.clamp;
 import static java.lang.Thread.currentThread;
 import static java.lang.Thread.sleep;
 
 import com.qualcomm.hardware.ams.AMSColorSensor;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode; // Required import
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 
@@ -36,23 +32,26 @@ import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import dev.nextftc.hardware.impl.ServoEx;
 
+
+/*
 
 @TeleOp(name = "TeleOp23737")
 public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, change back to linearopmode. It can be found in the emergancy code
     TestColorSensor colorSensor = new TestColorSensor();
     CRServo movingServo;
+
     Servo flyWheel;
     DcMotor turnTable, turretPower, motorFlyWheel, motorIntake;
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
 
+    public AnalogInput axonEncoder;
     ElapsedTime clock;
-    double finalTime = 0;
+    boolean cycleRunning;
 
-
-    boolean clockStarted = false;
 
 
     public void runOpMode() {
@@ -65,6 +64,7 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
         turretPower = hardwareMap.get(DcMotor.class, "turret_Motor");
         motorFlyWheel = hardwareMap.get(DcMotor.class, "mFly");
         turnTable = hardwareMap.get(DcMotor.class, "turn_Table");
+        axonEncoder = hardwareMap.get(AnalogInput.class, "encoder"); //TODO: Change name
         //motorIntake = hardwareMap.get(DcMotor.class, "intake");
         frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -74,19 +74,19 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
         motorFlyWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         movingServo.setDirection(DcMotorSimple.Direction.FORWARD);
         turnTable.setDirection(DcMotorSimple.Direction.FORWARD);
-       // motorIntake.setDirection(DcMotorSimple.Direction.REVERSE);
+        // motorIntake.setDirection(DcMotorSimple.Direction.REVERSE);
         colorSensor.init(hardwareMap, telemetry);
-        colorSensor.getColors();
         float x = gamepad1.right_trigger;
         float y = gamepad1.left_trigger;
+        TestColorSensor.DetectedColor detected = colorSensor.getColors();
+        //double time = clock.seconds();
 
-        clock = new ElapsedTime();
 
         waitForStart();
 
 
         while (opModeIsActive() && !isStopRequested()) {
-            movingServo.setPower(1);
+            axonEncoder.getVoltage();
             colorSensor.getColors();
             double max, forward, strafe, rotate, throttle, magnitude, angle, frontLeftPower, frontRightPower, backLeftPower, backRightPower;
             // Might slow down code a bit by declaring a new variable every time, so I moved it so it declares each variable once ^ at the start
@@ -110,7 +110,6 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
             frontRightPower /= max;
             backLeftPower /= max;
             backRightPower /= max;
-
 
             if (gamepad1.left_stick_y == 0 && (gamepad1.left_stick_x == 0) && (gamepad1.right_stick_x == 0)) {
                 frontLeftMotor.setPower(0);
@@ -153,145 +152,201 @@ public class TeleOp23737 extends LinearOpMode { //if opmode isn't working, chang
             }
 
 
-                 while (gamepad1.a) {
-                     movingServo.setPower(0);
-                 }
-                 while (gamepad1.b) {
-                      movingServo.setPower(-1);
-                 }
+            clock = new ElapsedTime();
 
 
+            if (gamepad1.y) {
+                movingServo.setPower(1);
+            }
+            if (gamepad1.x) {
+                movingServo.setPower(-1);
+            }
+            if (gamepad1.b) {
+                movingServo.setPower(0);
+            }
 
-            TestColorSensor.DetectedColor detected = colorSensor.getColors();
-            if (detected == TestColorSensor.DetectedColor.GREEN) {
-                     movingServo.setPower(0);
+             /*if(!cycleRunning) {
+                 movingServo.setPower(1);
+             }
+             if (cycleRunning) {
+                 movingServo.setPower(0);
+             }
 
+              */
+/*
 
-            } else if (detected == TestColorSensor.DetectedColor.PURPLE) {
-
-                    clock.reset();
-                    clock.startTime();
-                    if (clock.time(TimeUnit.SECONDS) >= 5) {
+            if (axonEncoder.getVoltage() >= 2.7 && axonEncoder.getVoltage() <= 2.8) {
+                movingServo.setPower(0);
+                if (detected == TestColorSensor.DetectedColor.GREEN || detected == TestColorSensor.DetectedColor.PURPLE) {
+                    if (!cycleRunning) {
+                        clock.reset();
+                        cycleRunning = true;
+                    }
+                    telemetry.addData("Color detected", detected);
+                    if (clock.time(TimeUnit.SECONDS) <= 2) {
                         turretPower.setPower(1);
-                        flyWheel.setPosition(.735);
                         motorFlyWheel.setPower(1);
-                    }
-                    if (clock.time(TimeUnit.SECONDS) >= 10) {
-                        turretPower.setPower(0);
                         flyWheel.setPosition(.37);
+                    }  else if (clock.time(TimeUnit.SECONDS) > 2) {
+                        movingServo.setPower(.5);
                         motorFlyWheel.setPower(0);
-                        if (clock.time(TimeUnit.SECONDS) >= 11) {
-                         }
+                        turretPower.setPower(0);
+                        flyWheel.setPosition(.725);
+                        cycleRunning = false;
                     }
-                } else {
-                clock.startTime();
-                        if (clock.time(TimeUnit.SECONDS) >= 0 && clock.time(TimeUnit.SECONDS) <= .438) {
-                            movingServo.setPower(1);
-                        } if (clock.time(TimeUnit.SECONDS) >= .438 && clock.time(TimeUnit.SECONDS) <= 1) {
-                            movingServo.setPower(0);
-                        } if (clock.time(TimeUnit.SECONDS) >= 6) {
-                            clock.reset();
-                        }
+                } /*else if (!cycleRunning) {
+                         clock.startTime();
+                         cycleRunning = true;
+                  }if (!(clock.time(TimeUnit.SECONDS) <= 1)) {
+                     cycleRunning = false;
+                     clock.reset();
+                 }
+                 */
+
+/*
+            }
+
+            if (axonEncoder.getVoltage() >= .5 && axonEncoder.getVoltage() <= .6) {
+                movingServo.setPower(0);
+                if (detected == TestColorSensor.DetectedColor.GREEN || detected == TestColorSensor.DetectedColor.PURPLE) {
+                    if (!cycleRunning) {
+                        clock.reset();
+                        cycleRunning = true;
+                    }
+                    telemetry.addData("Color detected", detected);
+                    if (clock.time(TimeUnit.SECONDS) <= 2) {
+                        turretPower.setPower(1);
+                        motorFlyWheel.setPower(1);
+                        flyWheel.setPosition(.37);
+                    } else if (clock.time(TimeUnit.SECONDS) > 2) {
+                        movingServo.setPower(.5);
+                        motorFlyWheel.setPower(0);
+                        turretPower.setPower(0);
+                        flyWheel.setPosition(.725);
+                        cycleRunning = false;
+                    } /*else if (!cycleRunning) {
+                     clock.startTime();
+                     cycleRunning = true;
+                 } if (!(clock.time(TimeUnit.SECONDS) <= 1)) {
+                     cycleRunning = false;
+                     clock.reset();
+                     }
+                     */
 
 
+/*
 
                 }
+            }
+
+            // Try to see if the code will work for these two. If they do, change the code for the ones that are commented out
+
+
+            if (axonEncoder.getVoltage() >= 1.55 && axonEncoder.getVoltage() <= 1.8) {
+                movingServo.setPower(0);
+                if (detected == TestColorSensor.DetectedColor.GREEN || detected == TestColorSensor.DetectedColor.PURPLE) {
+                    telemetry.addData("Color detected", detected);
+                    turretPower.setPower(1);
+                    motorFlyWheel.setPower(1);
+                    flyWheel.setPosition(.37);
+                } else {
+                    motorFlyWheel.setPower(0);
+                    turretPower.setPower(0);
+                    flyWheel.setPosition(.725);
+                    telemetry.addLine("Couldn't detect color");
+                }
+
+            }
+
+            if (axonEncoder.getVoltage() >= .01 && axonEncoder.getVoltage() <= .04) {
+                movingServo.setPower(0);
+                if (detected == TestColorSensor.DetectedColor.GREEN || detected == TestColorSensor.DetectedColor.PURPLE) {
+                    turretPower.setPower(1);
+                    motorFlyWheel.setPower(1);
+                    flyWheel.setPosition(.37);
+                }  else  {
+                    motorFlyWheel.setPower(0);
+                    turretPower.setPower(0);
+                    flyWheel.setPosition(.725);
+                }
+            }
+
+
+            if (axonEncoder.getVoltage() >= 2.15 && axonEncoder.getVoltage() <= 2.35) {movingServo.setPower(0);
+                if (detected == TestColorSensor.DetectedColor.GREEN || detected == TestColorSensor.DetectedColor.PURPLE) {
+                    if (!cycleRunning) {
+                        clock.reset();
+                        cycleRunning = true;
+                    }
+                    telemetry.addData("Color detected", detected);
+                    if (clock.time(TimeUnit.SECONDS) <= 2) {
+                        turretPower.setPower(1);
+                        motorFlyWheel.setPower(1);
+                        flyWheel.setPosition(.37);
+                    }  else if (clock.time(TimeUnit.SECONDS) > 2) {
+                        movingServo.setPower(.1);
+                        motorFlyWheel.setPower(0);
+                        turretPower.setPower(0);
+                        flyWheel.setPosition(.725);
+                        cycleRunning = false;
+                    }
+                } else {
+                    telemetry.addLine("Couldn't detect color");
+                    // movingServo.setPower(.1);
+                    cycleRunning = false;
+                }
+            }
+
+            if (axonEncoder.getVoltage() >= .9 && axonEncoder.getVoltage() <= 1.2) {
+                movingServo.setPower(0);
+                if (detected == TestColorSensor.DetectedColor.GREEN || detected == TestColorSensor.DetectedColor.PURPLE) {
+                    if (!cycleRunning) {
+                        clock.reset();
+                        cycleRunning = true;
+                    }
+                    telemetry.addData("Color detected", detected);
+                    if (clock.time(TimeUnit.SECONDS) <= 2) {
+                        turretPower.setPower(1);
+                        motorFlyWheel.setPower(1);
+                        flyWheel.setPosition(.37);
+                    } else if (clock.time(TimeUnit.SECONDS) > 2) {
+                        movingServo.setPower(.5);
+                        motorFlyWheel.setPower(0);
+                        turretPower.setPower(0);
+                        flyWheel.setPosition(.725);
+                        cycleRunning = false;
+                    }
+                } /*else if (!cycleRunning) {
+                    clock.reset();
+                    cycleRunning = true;
+                }
+                if (clock.time(TimeUnit.SECONDS) <= 2) {
+                    movingServo.setPower(0);
+                } else {
+                    telemetry.addLine("Couldn't detect color");
+                    movingServo.setPower(.5);
+                    cycleRunning = false;
+                }
+                */
+
+
+           // }
+
+
+
+/*
+
+            telemetry.addData("Axon Encoder Voltage: ", axonEncoder.getVoltage());
             telemetry.update();
-
-
 
         }
-
-
-
-
     }
 }
+//intake to intake  *2.794    *1.689     *0.6
+//shooting to shooting  1.094    *2.257  *.02
 
 
 
-
-
-
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-            if (gamepad1.b && !clockStarted) {
-                clock.reset();
-                clockStarted = true;
-                movingServo.setPower(1);    // start servo
-            }
-
-            if (gamepad1.y && clockStarted) {
-                clockStarted = false;
-                movingServo.setPower(0);    // stop servo
-                finalTime = clock.seconds(); // save frozen time
-            }
-
-            if (clockStarted) {
-                telemetry.addData("Servo Power", "Running");
-                telemetry.addData("Timer (live)", clock.seconds());
-            } else {
-                telemetry.addData("Servo Power", "Stopped");
-                telemetry.addData("Timer (final)", finalTime);
-            }
-
-            telemetry.update();
-
-            while (gamepad1.x) {
-                movingServo.setPower(1);
-            }
-
-            while (gamepad1.y) {
-                movingServo.setPower(-1);
-            }
-
-
-ElapsedTime timer = new ElapsedTime();
-            boolean timerRunning = false;
-            double finalTime = 0;
-
-
-                 if (gamepad1.y && !timerRunning) {
-                    timer.reset();
-                    timerRunning = true;
-                    movingServo.setPower(1);    // start servo
-                }
-
-                 if (gamepad1.x && timerRunning) {
-                    timerRunning = false;
-                    movingServo.setPower(0);    // stop servo
-                    finalTime = timer.seconds(); // save frozen time
-                }
-
-                 if (timerRunning) {
-                    telemetry.addData("Servo Power", "Running");
-                    telemetry.addData("Timer (live)", timer.seconds());
-                } else {
-                    telemetry.addData("Servo Power", "Stopped");
-                    telemetry.addData("Timer (final)", finalTime);
-                }
-
- while (gamepad1.x) {
-                movingServo.setPower(1);
-            }
-
-            while (gamepad1.y) {
-                movingServo.setPower(-1);
-            }
 
 
 
@@ -299,6 +354,3 @@ ElapsedTime timer = new ElapsedTime();
 
 
 */
-
-
-

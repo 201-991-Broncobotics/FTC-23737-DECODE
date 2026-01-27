@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.teleOp;
 
 //import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+import static org.opencv.core.Core.inRange;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
@@ -17,20 +19,17 @@ public class TestColorSensor {
     public double normRed, normGreen, normBlue;
 
 
+
     public void init(HardwareMap hwMap, Telemetry telemetry) {
         colorSensor = hwMap.get(RevColorSensorV3.class, "colorSensor");
         this.telemetry = telemetry;
     }
 
     public enum DetectedColor {
-        GREEN(/* redMin .012 */   .012, /* redMax .015 */   .015, /* greenMin .03 */ .03, /* greenMax .04*/
-                .04,/* blueMin ,023 */  .023, /* blueMax .03 */  .03),
+        GREEN(   .02,    .03,  .06, .7,  .04,   .05),
 
-        PURPLE(/* redMin */   .01, /* redMax */   .02,/* greenMin */ .011, /* greenMax */ .015,
-                /* blueMin */  .012, /* blueMax */  .016),
-        UNKNOWN(
-                0, 0, 0, 0, 0, 0
-        );
+        PURPLE(   .031,    .05, .04,  .059, .045,   .06),
+        UNKNOWN(0, 0, 0, 0, 0, 0);
 
 
         private final double redMin, redMax;
@@ -54,17 +53,37 @@ public class TestColorSensor {
     }
 
     public DetectedColor getColors() {
-        colorSensor.setGain(60);
+        colorSensor.setGain(25);
         NormalizedRGBA colors = colorSensor.getNormalizedColors();
-        normGreen = colors.green * colors.alpha;
-        normRed = colors.red * colors.alpha;
-        normBlue = colors.blue * colors.alpha;
+        normGreen = colors.green;
+        normRed = colors.red;
+        normBlue = colors.blue;
 
-        telemetry.addLine("color detected");
         telemetry.addData("red", normRed);
         telemetry.addData("blue", normBlue);
         telemetry.addData("green", normGreen);
 
-        return null;
+
+        if (normRed >= DetectedColor.GREEN.redMin && normRed <= DetectedColor.GREEN.redMax &&
+                normGreen >= DetectedColor.GREEN.greenMin && normGreen <= DetectedColor.GREEN.greenMax &&
+                normBlue >= DetectedColor.GREEN.blueMin && normBlue <= DetectedColor.GREEN.blueMax) {
+
+                telemetry.addData("Matched Color", "GREEN");
+                return DetectedColor.GREEN;
+
+        }
+
+         if (normRed   >= DetectedColor.PURPLE.redMin   && normRed   <= DetectedColor.PURPLE.redMax &&
+                normGreen >= DetectedColor.PURPLE.greenMin && normGreen <= DetectedColor.PURPLE.greenMax &&
+                normBlue  >= DetectedColor.PURPLE.blueMin  && normBlue  <= DetectedColor.PURPLE.blueMax) {
+
+            telemetry.addData("Matched Color", "PURPLE");
+            return DetectedColor.PURPLE;
+        }
+
+
+        telemetry.addData("Matched Color", "UNKNOWN");
+        return DetectedColor.UNKNOWN;
+
     }
 }
